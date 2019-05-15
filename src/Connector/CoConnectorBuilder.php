@@ -13,14 +13,8 @@ class CoConnectorBuilder implements IConnectorBuilder
      * @param array $readConfigs
      * @throws \Exception
      */
-    public function __construct(DBConfig $writeConfig, array $readConfigs)
+    public function __construct(DBConfig $writeConfig = null, array $readConfigs = [])
     {
-        foreach ($readConfigs as $config) {
-            if (!($config instanceof DBConfig)) {
-                throw new \Exception("error DBConfig object");
-            }
-        }
-
         $this->writeConfig = $writeConfig;
         $this->readConfigs = $readConfigs;
     }
@@ -34,6 +28,10 @@ class CoConnectorBuilder implements IConnectorBuilder
     {
         /** @var DBConfig */
         $config = $connType == 'read' ? $this->getReadConfig() : $this->writeConfig;
+
+        if (!($config instanceof DBConfig)) {
+            return null;
+        }
 
         return new CoConnector($config->host, $config->user, $config->password, $config->database, $config->port, $config->timeout, $config->charset, $config->autoConnect);
     }
