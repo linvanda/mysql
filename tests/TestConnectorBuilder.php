@@ -6,7 +6,6 @@
  */
 class TestConnectorBuilder implements \Linvanda\Fundation\MySQL\Connector\IConnectorBuilder
 {
-
     /**
      * 创建并返回 IConnector 对象
      * @param string $connType read/write
