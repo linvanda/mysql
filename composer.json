@@ -1,0 +1,19 @@
+{
+    "name": "linvanda/mysql",
+    "type": "library",
+    "authors": [
+        {
+            "name": "linvanda",
+            "email": "1049180458@qq.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "ext-swoole": ">=4.3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Linvanda\\Fundation\\MySQL\\": "src/"
+        }
+    }
+}
