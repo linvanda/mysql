@@ -20,6 +20,7 @@ class Transaction
     private $commandPool = [];
     private $model = [];// 读模式还是写模式 write/read
     private $connector = [];
+    private $lastExecInfo = []; // 最后执行情况
 
     public function __construct(IPool $pool)
     {
@@ -86,6 +87,7 @@ class Transaction
      * 提交事务
      * @param bool $isImplicit 是否隐式事务，隐式事务不会向 MySQL 提交 commit
      * @return bool
+     * @throws \Exception
      */
     public function commit(bool $isImplicit = false): bool
     {
@@ -110,6 +112,10 @@ class Transaction
         return $result;
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function rollback(): bool
     {
         if (!$this->isRunning()) {
@@ -163,26 +169,64 @@ class Transaction
         return $this->model[co::getuid()] = $model === 'read' ? 'read' : 'write';
     }
 
+    public function lastInsertId()
+    {
+        return $this->lastExecInfo[co::getuid()]['insert_id'];
+    }
+
+    public function affectedRows()
+    {
+        return $this->lastExecInfo[co::getuid()]['affected_rows'];
+    }
+
+    public function lastError()
+    {
+        return $this->lastExecInfo[co::getuid()]['error'];
+    }
+
+    public function lastErrorNo()
+    {
+        return $this->lastExecInfo[co::getuid()]['error_no'];
+    }
+
     /**
      * @return IConnector
      */
-    public function connector(): IConnector
+    private function connector(): IConnector
     {
         return $this->connector[co::getuid()];
     }
 
     /**
      * 释放当前协程的事务资源
+     * @throws \Exception
      */
     private function releaseTransResource()
     {
         $cid = co::getuid();
         $this->isRunning[$cid] = 0;
         $this->commandPool[$cid] = [];
+        // 归还连接之前保存 lasterInsertId (归还后外界就再也拿不到了)
+        $this->setLastExecInfo();
         // 归还连接资源
         $this->pool->pushConnector($this->connector[$cid]);
         unset($this->connector[$cid]);
         unset($this->model[$cid]);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function setLastExecInfo()
+    {
+        $cid = co::getuid();
+        $conn = $this->getConnector();
+        $this->lastExecInfo[$cid] = [
+            'insert_id' => $conn->insertId(),
+            'error' => $conn->lastError(),
+            'error_no' => $conn->lastErrorNo(),
+            'affected_rows' => $conn->affectedRows(),
+        ];
     }
 
     /**
