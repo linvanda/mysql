@@ -144,16 +144,25 @@ class Query
         return $this->transaction->command(...$this->prepareSQL($preSql, $params));
     }
 
+    /**
+     * @return int
+     */
     public function lastInsertId()
     {
         return $this->transaction->lastInsertId();
     }
 
+    /**
+     * @return string
+     */
     public function lastError()
     {
         return $this->transaction->lastError();
     }
 
+    /**
+     * @return int
+     */
     public function lastErrorNo()
     {
         return $this->transaction->lastErrorNo();
