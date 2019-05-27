@@ -126,9 +126,9 @@ class Query
     {
         $fields = $this->fields;
         $limit = $this->limit;
+        $offset = $this->offset;
 
         $countRes = $this->transaction->command(...$this->fields('count(*) as cnt')->reset('limit')->compile(false));
-
         if ($countRes === false) {
             return false;
         }
@@ -138,13 +138,13 @@ class Query
             return ['total' => 0, 'data' => []];
         }
 
-        $data = $this->transaction->command(...$this->fields($fields)->limit($limit)->compile());
+        $data = $this->transaction->command(...$this->fields($fields)->limit($limit, $offset)->compile());
 
         if ($data === false) {
             return false;
         }
 
-        return ['total' => $countRes['cnt'], 'data' => $data];
+        return ['total' => $countRes[0]['cnt'], 'data' => $data];
     }
 
     /**

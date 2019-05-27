@@ -15,8 +15,9 @@ Trait Builder
     private $fields;
     private $table;
     private $where;
-    private $join = '';
+    private $join;
     private $limit;
+    private $offset;
     private $orderBy;
     private $groupBy;
     private $having;
@@ -213,9 +214,8 @@ Trait Builder
      */
     public function limit(int $limit, int $offset = 0)
     {
-        $limit = intval($limit);
-        $offset = intval($offset);
-        $this->limit = "limit $offset,$limit";
+        $this->limit = intval($limit);
+        $this->offset = intval($offset);
 
         return $this;
     }
@@ -336,16 +336,22 @@ Trait Builder
         if ($type) {
             $nCasetype = strtolower(str_replace('_', '', $type));
 
+            if ($nCasetype == 'limit') {
+                $this->limit = $this->offset = null;
+                return $this;
+            }
+
             foreach (array_keys(get_object_vars($this)) as $attr) {
                 $nCaseAttr = strtolower($attr);
                 if ($nCaseAttr == $nCasetype || $nCaseAttr == "{$nCasetype}params") {
-                    $this->$attr = is_array($this->$attr) ? [] : '';
+                    $this->$attr = is_array($this->$attr) ? [] : null;
                 }
             }
         } else {
-            $this->fields = $this->join = $this->limit = $this->orderBy = $this->groupBy = $this->set = '';
+            $this->fields = $this->join = $this->orderBy = $this->groupBy = $this->set = '';
             $this->forceIndex = $this->table = $this->type = $this->values = $this->where = $this->having = '';
             $this->whereParams = $this->joinParams = $this->havingParams = $this->valuesParams = $this->setParams = [];
+            $this->limit = $this->offset = null;
         }
 
         return $this;
@@ -435,7 +441,7 @@ Trait Builder
         if ($this->table) {
             $sql .= implode(
                 ' ',
-                [
+                array_filter([
                     'from',
                     $this->table,
                     $this->join,
@@ -444,8 +450,8 @@ Trait Builder
                     $this->groupBy,
                     $this->having,
                     $this->orderBy,
-                    $this->limit
-                ]
+                    $this->limitStr()
+                ])
             );
             $params = array_merge($this->joinParams, $this->whereParams, $this->havingParams);
         }
@@ -544,14 +550,23 @@ Trait Builder
         return [str_replace('1=1 and ', '', $where), $params];
     }
 
+    private function limitStr()
+    {
+        if ($this->limit === null) {
+            return '';
+        }
+
+        return $this->offset === null ? "limit {$this->limit}" : "limit {$this->offset},{$this->limit}";
+    }
+
     /**
-     * 去掉文本中的非常规字符，使得文本中只包含 字母、数字、下划线、中划线、点、逗号、空格、星号
+     * 去掉文本中的非常规字符，使得文本中只包含 字母、数字、下划线、中划线、点、逗号、空格、星号、小括号
      * @param $text
      * @return string
      */
     private function plainText(string $text): string
     {
-        return preg_replace('/[^-a-zA-Z0-9_.,\s*]+/', '', $text);
+        return preg_replace('/[^-a-zA-Z0-9_.,\s*()]+/', '', $text);
     }
 
     private function isExpression($value)

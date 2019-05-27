@@ -44,9 +44,6 @@ class CoPool implements IPool
      */
     protected function __construct(IConnectorBuilder $connectorBuilder, int $size, int $maxSleepTime = 600, int $maxExecCount = 1000)
     {
-        if (co::getuid() == -1) {
-            throw new \Exception("只能在协程环境使用CoPool");
-        }
         $this->connectorBuilder = $connectorBuilder;
         $this->readPool = new co\Channel($size);
         $this->writePool = new co\Channel($size);
