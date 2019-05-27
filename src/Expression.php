@@ -1,11 +1,11 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL;
+namespace Linvanda\MySQL;
 
 /**
  * 表达式
  * Class Expression
- * @package Linvanda\Fundation\MySQL
+ * @package Linvanda\MySQL
  */
 class Expression
 {

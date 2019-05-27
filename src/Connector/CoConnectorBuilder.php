@@ -1,6 +1,6 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL\Connector;
+namespace Linvanda\MySQL\Connector;
 
 class CoConnectorBuilder implements IConnectorBuilder
 {

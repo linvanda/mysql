@@ -1,13 +1,13 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL\Pool;
+namespace Linvanda\MySQL\Pool;
 
-use Linvanda\Fundation\MySQL\Connector\IConnector;
+use Linvanda\MySQL\Connector\IConnector;
 
 /**
  * 连接池
  * Interface IPool
- * @package Linvanda\Fundation\MySQL\Pool
+ * @package Linvanda\MySQL\Pool
  */
  interface IPool
  {

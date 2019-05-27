@@ -1,6 +1,6 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL\Connector;
+namespace Linvanda\MySQL\Connector;
 
 /**
  * MySQL 数据库配置 DTO 对象

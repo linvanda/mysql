@@ -1,11 +1,11 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL\Connector;
+namespace Linvanda\MySQL\Connector;
 
 /**
  * 连接对象的统计信息，供 Pool 使用
  * Class ConnectorInfo
- * @package Linvanda\Fundation\MySQL\Connector
+ * @package Linvanda\MySQL\Connector
  */
 class ConnectorInfo
 {

@@ -1,13 +1,13 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL;
+namespace Linvanda\MySQL;
 
 /**
  * 简单的查询构造器
  * 复杂的 SQL 建议直接写原生 SQL
  * 目前只支持构造 select,update,insert,replace,delete
  * Trait Builder
- * @package Linvanda\Fundation\MySQL
+ * @package Linvanda\MySQL
  */
 Trait Builder
 {

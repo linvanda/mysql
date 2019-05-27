@@ -1,23 +1,28 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL;
+namespace Linvanda\MySQL;
+
+use Linvanda\MySQL\Transaction\ITransaction;
 
 /**
  * 查询器，对外暴露的 API
  * Class Query
- * @package Linvanda\Fundation\MySQL
+ * @package Linvanda\MySQL
  */
 class Query
 {
     use Builder;
 
+    public const MODEL_READ = 'read';
+    public const MODEL_WRITE = 'write';
+
     private $transaction;
 
     /**
      * Query constructor.
-     * @param Transaction $transaction 事务管理器
+     * @param ITransaction $transaction 事务管理器
      */
-    public function __construct(Transaction $transaction)
+    public function __construct(ITransaction $transaction)
     {
         $this->transaction = $transaction;
     }
@@ -36,6 +41,7 @@ class Query
     /**
      * 提交事务
      * @return bool
+     * @throws \Exception
      */
     public function commit(): bool
     {
@@ -45,10 +51,26 @@ class Query
     /**
      * 回滚事务
      * @return bool
+     * @throws \Exception
      */
     public function rollback(): bool
     {
         return $this->transaction->rollback();
+    }
+
+    /**
+     * 强制设置使用读库还是写库
+     * @param string $model read/write
+     * @return string
+     * @throws \Exception
+     */
+    public function setModel(string $model)
+    {
+        if (!in_array($model, [self::MODEL_READ, self::MODEL_WRITE])) {
+            throw new \Exception("非法的 model 标识：{$model}。仅支持 read/write");
+        }
+        $this->transaction->model($model);
+        return $this;
     }
 
     /**

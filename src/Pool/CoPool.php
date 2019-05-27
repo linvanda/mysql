@@ -1,17 +1,17 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL\Pool;
+namespace Linvanda\MySQL\Pool;
 
 use Swoole\Coroutine as co;
-use Linvanda\Fundation\MySQL\Connector\IConnectorBuilder;
-use Linvanda\Fundation\MySQL\Connector\IConnector;
-use Linvanda\Fundation\MySQL\Connector\ConnectorInfo;
+use Linvanda\MySQL\Connector\IConnectorBuilder;
+use Linvanda\MySQL\Connector\IConnector;
+use Linvanda\MySQL\Connector\ConnectorInfo;
 
 /**
  * 协程版连接池
  * 注意：一旦连接池被销毁，连接池持有和分配出去的连接对象都会被关闭（哪怕该连接对象还在被外面使用）
  * Class CoPool
- * @package Linvanda\Fundation\MySQL\Pool
+ * @package Linvanda\MySQL\Pool
  */
 class CoPool implements IPool
 {

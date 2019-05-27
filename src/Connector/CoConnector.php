@@ -1,13 +1,13 @@
 <?php
 
-namespace Linvanda\Fundation\MySQL\Connector;
+namespace Linvanda\MySQL\Connector;
 
 use Swoole\Coroutine\MySQL;
 
 /**
  * 协程版连接器
  * Class CoConnector
- * @package Linvanda\Fundation\MySQL\Connector
+ * @package Linvanda\MySQL\Connector
  */
 class CoConnector implements IConnector
 {
