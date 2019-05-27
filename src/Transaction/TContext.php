@@ -13,31 +13,12 @@ class TContext implements \ArrayAccess
 {
     private $container = [];
 
-    public function __construct()
-    {
-        Co::defer(function () {
-            $this->clean();
-        });
-    }
-
     /**
      * 清除当前协程上下文
-     * @param array $excludes 不能清除的
      */
-    public function clean(array $excludes = [])
+    public function clean()
     {
-        $cuid = Co::getuid();
-
-        if (!$excludes) {
-            unset($this->container[$cuid]);
-            return;
-        }
-
-         foreach ($this->container[$cuid] as $key => $val) {
-             if (!in_array($key, $excludes)) {
-                 unset($this->container[$cuid]);
-             }
-         }
+        unset($this->container[Co::getuid()]);
     }
 
     /**
@@ -66,7 +47,7 @@ class TContext implements \ArrayAccess
     {
         $cuid = Co::getuid();
         if (!isset($this->container[$cuid])) {
-            $this->container[$cuid] = [];
+            $this->init();
         }
         $this->container[$cuid][$offset] = $value;
     }
@@ -79,5 +60,17 @@ class TContext implements \ArrayAccess
     public function __toString(): string
     {
         return print_r($this->container, true);
+    }
+
+    /**
+     * 第一次设置当前协程上下文信息时初始化
+     */
+    private function init()
+    {
+        $this->container[Co::getuid()] = [];
+        // 协程退出时需要清理当前协程上下文
+        Co::defer(function () {
+            unset($this->container[Co::getuid()]);
+        });
     }
 }

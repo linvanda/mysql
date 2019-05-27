@@ -2,7 +2,6 @@
 
 namespace Linvanda\MySQL\Transaction;
 
-use Swoole\Coroutine as co;
 use Linvanda\MySQL\Pool\IPool;
 use Linvanda\MySQL\Connector\IConnector;
 
@@ -15,8 +14,6 @@ use Linvanda\MySQL\Connector\IConnector;
 class CoTransaction
 {
     private $pool;
-    private $commandPool = [];
-    // 协程上下文
     private $context;
 
     public function __construct(IPool $pool)

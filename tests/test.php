@@ -15,12 +15,16 @@ require 'TestConnectorBuilder.php';
 
 go(function () {
     $context = new \Linvanda\MySQL\Transaction\TContext();
-    go(function () use ($context) {
-        $sql = $context['sql'] ?? [];
-        $sql[] = "sql 1";
-        $sql[] = "sql 2";
-        $context['sql'] = $sql;
 
-        var_export($context['sql']);
-    });
+    for ($i = 0; $i < 4; $i++) {
+        go(function () use ($context, $i) {
+            $context['name'] = 'name - ' . $i;
+            if ($i == 3) {
+                co::sleep(2);
+            }
+        });
+    }
+
+    co::sleep(1);
+    var_export($context);
 });
