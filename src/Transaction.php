@@ -40,13 +40,14 @@ class Transaction
             return true;
         }
 
-        $this->isRunning(1);
-        $this->model[co::getuid()] = $model;
-
-        // 开启事务时需从连接池获取 Connector
+        // 从连接池获取 Connector
         if (!$this->getConnector()) {
             return false;
         }
+
+        $this->isRunning(1);
+        $this->model[co::getuid()] = $model;
+        $this->resetLastExecInfo();
 
         return $isImplicit || $this->connector()->begin();
     }
@@ -227,6 +228,11 @@ class Transaction
             'error_no' => $conn->lastErrorNo(),
             'affected_rows' => $conn->affectedRows(),
         ];
+    }
+
+    private function resetLastExecInfo()
+    {
+        $this->lastExecInfo[co::getuid()] = [];
     }
 
     /**
