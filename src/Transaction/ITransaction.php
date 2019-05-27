@@ -54,4 +54,10 @@ interface ITransaction
     public function lastError();
 
     public function lastErrorNo();
+
+    /**
+     * 获取一次事务中执行的 SQL 列表
+     * @return array
+     */
+    public function sql():array;
 }

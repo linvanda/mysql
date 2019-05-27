@@ -11,7 +11,7 @@ use Linvanda\MySQL\Connector\IConnector;
  * Class Transaction
  * @package Linvanda\MySQL\Transaction
  */
-class CoTransaction
+class CoTransaction implements ITransaction
 {
     private $pool;
     private $context;
@@ -143,7 +143,7 @@ class CoTransaction
      * @param string$model read/write
      * @return string
      */
-    public function model($model = null): string
+    public function model(?string $model = null): string
     {
         // 事务处于开启状态时不允许切换运行模式
         if (!isset($model) || $this->isRunning()) {
@@ -175,9 +175,9 @@ class CoTransaction
         return $this->getLastExecInfo('error_no');
     }
 
-    public function sql()
+    public function sql(): array
     {
-        return $this->context['sql'];
+        return $this->context['sql'] ?? [];
     }
 
     /**
@@ -287,7 +287,7 @@ class CoTransaction
         unset($this->context['connector']);
     }
 
-    private function isRunning(?bool $val = null): ?bool
+    private function isRunning(?bool $val = null)
     {
         if (isset($val)) {
             $this->context['is_running'] = $val;

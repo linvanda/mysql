@@ -15,6 +15,10 @@ class CoConnectorBuilder implements IConnectorBuilder
      */
     public function __construct(DBConfig $writeConfig = null, array $readConfigs = [])
     {
+        if ($writeConfig && !$readConfigs) {
+            $readConfigs = [$writeConfig];
+        }
+
         $this->writeConfig = $writeConfig;
         $this->readConfigs = $readConfigs;
     }
