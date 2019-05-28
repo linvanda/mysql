@@ -15,7 +15,9 @@ use Linvanda\MySQL\Connector\IConnector;
       * 从连接池中获取 MySQL 连接对象
       * @param string $type
       * @return IConnector
-      * @throws \Exception
+      * @throws \Linvanda\MySQL\Exception\PoolClosedException
+      * @throws \Linvanda\MySQL\Exception\ConnectException
+      * @throws \Linvanda\MySQL\Exception\ConnectFatalException
       */
     public function getConnector(string $type = 'write'): IConnector;
      /**

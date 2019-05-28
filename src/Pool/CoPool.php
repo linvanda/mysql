@@ -2,10 +2,10 @@
 
 namespace Linvanda\MySQL\Pool;
 
+use Swoole\Coroutine as co;
 use Linvanda\MySQL\Exception\ConnectException;
 use Linvanda\MySQL\Exception\ConnectFatalException;
 use Linvanda\MySQL\Exception\PoolClosedException;
-use Swoole\Coroutine as co;
 use Linvanda\MySQL\Connector\IConnectorBuilder;
 use Linvanda\MySQL\Connector\IConnector;
 use Linvanda\MySQL\Connector\ConnectorInfo;
@@ -28,9 +28,9 @@ class CoPool implements IPool
     /** @var IConnectorBuilder */
     protected $readPool;
     /** @var co\Channel */
-    protected $connectorBuilder;
-    /** @var co\Channel */
     protected $writePool;
+    /** @var co\Channel */
+    protected $connectorBuilder;
     // 连接池大小
     protected $size;
     // 记录每个连接的相关信息
@@ -45,7 +45,7 @@ class CoPool implements IPool
     protected $maxExecCount;
     protected $status;
     // 连续等待连接对象失败次数（超过一定次数说明很可能数据库连接暂不可用）
-    protected $waitTimeoutNum = 0;
+    protected $waitTimeoutNum;
 
     /**
      * CoPool constructor.
@@ -64,10 +64,13 @@ class CoPool implements IPool
         $this->maxSleepTime = $maxSleepTime;
         $this->maxExecCount = $maxExecCount;
         $this->connectNum = 0;
+        $this->readConnectNum = 0;
+        $this->writeConnectNum = 0;
+        $this->waitTimeoutNum = 0;
         $this->status = self::STATUS_OK;
     }
 
-    public static function instance(IConnectorBuilder $connectorBuilder, int $size = 20, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
+    public static function instance(IConnectorBuilder $connectorBuilder, int $size = 15, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
     {
         if (!static::$instance) {
             static::$instance = new static($connectorBuilder, $size, $maxSleepTime, $maxExecCount);
@@ -94,13 +97,14 @@ class CoPool implements IPool
 
         if ($pool->isEmpty()) {
             if (($type == 'read' ? $this->readConnectNum : $this->writeConnectNum) > $this->size * 3) {
-                // 远远超额，不能再创建，需等待
+                // 超额，不能再创建，需等待
                 if ($this->waitTimeoutNum > self::MAX_WAIT_TIMEOUT_NUM) {
                     // 超出了等待失败次数限制，直接抛异常
                     throw new ConnectFatalException("多次获取连接超时，请检查数据库服务器状态");
                 }
 
-                $conn = $pool->pop(4);
+                $conn = $pool->pop(3);
+
                 // 等待失败
                 if (!$conn) {
                     switch ($pool->errCode) {
@@ -125,7 +129,7 @@ class CoPool implements IPool
                 } catch (ConnectException $exception) {
                     if ($exception->getCode() == 1040) {
                         // Too many connections,等待连接池
-                        $conn = $pool->pop(4);
+                        $conn = $pool->pop(3);
                     }
 
                     if (!$conn) {
@@ -133,11 +137,6 @@ class CoPool implements IPool
                             $this->waitTimeoutNum++;
                         }
 
-                        throw new ConnectException($exception->getMessage(), $exception->getCode());
-                    }
-
-                    if (!$conn) {
-                        // 再次抛出
                         throw new ConnectException($exception->getMessage(), $exception->getCode());
                     }
                 }
@@ -217,9 +216,10 @@ class CoPool implements IPool
             return true;
         }
 
+        $objId = $this->getObjectId($connector);
         $connector->close();
-        $this->untickConnectNum($this->connectsInfo[$this->getObjectId($connector)]->type);
-        unset($this->connectsInfo[$this->getObjectId($connector)]);
+        $this->untickConnectNum($this->connectsInfo[$objId]->type);
+        unset($this->connectsInfo[$objId]);
 
         return true;
     }
@@ -253,9 +253,17 @@ class CoPool implements IPool
         $conn = $this->connectorBuilder->build($type);
 
         if ($conn) {
-            // 建立数据库连接
-            $conn->connect();
+            // 要在 connect 前 tick，否则无法阻止高并发协程打入
             $this->tickConnectNum($type);
+
+            try {
+                $conn->connect();
+            } catch (ConnectException $exception) {
+                // 撤销 tick
+                $this->untickConnectNum($type);
+                throw new ConnectException($exception->getMessage(), $exception->getCode());
+            }
+
             $this->connectsInfo[$this->getObjectId($conn)] = new ConnectorInfo($conn, $type);
         }
 

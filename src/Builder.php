@@ -375,6 +375,8 @@ Trait Builder
      */
     private function prepareSQL(string $sql, array $params)
     {
+        $sql = trim($sql);
+
         if (!$params) {
             return [$sql, []];
         }

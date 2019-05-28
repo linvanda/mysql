@@ -7,7 +7,7 @@ namespace Linvanda\MySQL\Exception;
  * Class ConnectFatalException
  * @package Linvanda\MySQL\Exception
  */
-class ConnectFatalException extends \Exception
+class ConnectFatalException extends ConnectException
 {
     //
 }

@@ -2,6 +2,8 @@
 
 namespace Linvanda\MySQL\Transaction;
 
+use Linvanda\MySQL\Exception\ConnectException;
+use Linvanda\MySQL\Exception\TransactionException;
 use Linvanda\MySQL\Pool\IPool;
 use Linvanda\MySQL\Connector\IConnector;
 
@@ -51,9 +53,13 @@ class CoTransaction implements ITransaction
         $this->isRunning(true);
 
         // 获取 Connector
-        if (!($connector = $this->connector())) {
+        try {
+            if (!($connector = $this->connector())) {
+                throw new ConnectException("获取连接失败");
+            }
+        } catch (\Exception $exception) {
             $this->isRunning(false);
-            return false;
+            throw new TransactionException($exception->getMessage(), $exception->getCode());
         }
 
         $this->resetLastExecInfo();
@@ -107,11 +113,14 @@ class CoTransaction implements ITransaction
 
         $result = true;
         if (!$isImplicit) {
-            $result = $this->connector()->commit();
-
-            if ($result === false) {
-                // 执行失败，试图回滚
-                $this->rollback();
+            if ($conn = $this->connector(false)) {
+                $result = $conn->commit();
+                if ($result === false) {
+                    // 执行失败，试图回滚
+                    $this->rollback();
+                    return false;
+                }
+            } else {
                 return false;
             }
         }
@@ -132,10 +141,12 @@ class CoTransaction implements ITransaction
             return true;
         }
 
-        $result = $this->connector()->rollback();
-        $this->releaseTransResource();
+        if ($conn = $this->connector(false)) {
+            $conn->rollback();
+        }
 
-        return $result;
+        $this->releaseTransResource();
+        return true;
     }
 
     /**
@@ -201,13 +212,16 @@ class CoTransaction implements ITransaction
      */
     private function saveLastExecInfo()
     {
-        $conn = $this->connector();
-        $this->context['last_exec_info'] = [
-            'insert_id' => $conn->insertId(),
-            'error' => $conn->lastError(),
-            'error_no' => $conn->lastErrorNo(),
-            'affected_rows' => $conn->affectedRows(),
-        ];
+        if ($conn = $this->connector(false)) {
+            $this->context['last_exec_info'] = [
+                'insert_id' => $conn->insertId(),
+                'error' => $conn->lastError(),
+                'error_no' => $conn->lastErrorNo(),
+                'affected_rows' => $conn->affectedRows(),
+            ];
+        } else {
+            $this->context['last_exec_info'] = [];
+        }
     }
 
     private function resetLastExecInfo()
@@ -252,7 +266,7 @@ class CoTransaction implements ITransaction
 
     private function calcModelFromSQL(string $sql): string
     {
-        if (preg_match('/^(update|replace|delete|insert|drop|grant|truncate|alter|create)\s/i', $sql)) {
+        if (preg_match('/^(update|replace|delete|insert|drop|grant|truncate|alter|create)\s/i', trim($sql))) {
             return 'write';
         }
 
@@ -261,13 +275,20 @@ class CoTransaction implements ITransaction
 
     /**
      * 获取连接资源
+     * @param bool $usePool
      * @return IConnector
-     * @throws \Exception
+     * @throws \Linvanda\MySQL\Exception\ConnectException
+     * @throws \Linvanda\MySQL\Exception\ConnectFatalException
+     * @throws \Linvanda\MySQL\Exception\PoolClosedException
      */
-    private function connector()
+    private function connector(bool $usePool = true)
     {
         if ($connector = $this->context['connector']) {
             return $connector;
+        }
+
+        if (!$usePool) {
+            return null;
         }
 
         $this->context['connector'] = $this->pool->getConnector($this->model());
