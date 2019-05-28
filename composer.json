@@ -13,7 +13,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Linvanda\\MySQL\\": "src/"
+            "Linvanda\\MySQL\\": "src/",
+            "Linvanda\\MySQL\\Test\\": "tests/"
         }
     }
 }

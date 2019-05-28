@@ -37,7 +37,7 @@ class CoConnectorBuilder implements IConnectorBuilder
             return null;
         }
 
-        return new CoConnector($config->host, $config->user, $config->password, $config->database, $config->port, $config->timeout, $config->charset, $config->autoConnect);
+        return new CoConnector($config->host, $config->user, $config->password, $config->database, $config->port, $config->timeout, $config->charset);
     }
 
     private function getReadConfig()

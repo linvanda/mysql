@@ -125,8 +125,8 @@ class Query
     public function page(): array
     {
         $fields = $this->fields;
-        $limit = $this->limit;
-        $offset = $this->offset;
+        $limit = $this->limit ?: 20;
+        $offset = $this->offset ?? 0;
 
         $countRes = $this->transaction->command(...$this->fields('count(*) as cnt')->reset('limit')->compile(false));
         if ($countRes === false) {
@@ -188,5 +188,10 @@ class Query
     public function lastErrorNo()
     {
         return $this->transaction->lastErrorNo();
+    }
+
+    public function affectedRows()
+    {
+        return $this->transaction->affectedRows();
     }
 }

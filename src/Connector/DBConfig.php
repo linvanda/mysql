@@ -16,7 +16,6 @@ class DBConfig
     public $database;
     public $charset;
     public $timeout;
-    public $autoConnect;
 
     public function __construct(
         string $host,
@@ -25,8 +24,7 @@ class DBConfig
         string $database,
         int $port = 3306,
         int $timeout = 3,
-        string $charset = 'utf8',
-        bool $autoConnect = false
+        string $charset = 'utf8'
     )
     {
         $this->host = $host;
@@ -36,6 +34,5 @@ class DBConfig
         $this->database = $database;
         $this->charset = $charset;
         $this->timeout = $timeout;
-        $this->autoConnect = $autoConnect;
     }
 }

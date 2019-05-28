@@ -17,7 +17,6 @@ interface IConnector
      * @param int $port
      * @param int $timeout
      * @param string $charset
-     * @param bool @authConnect 是否自动连接
      */
     public function __construct(
         string $host,
@@ -26,13 +25,13 @@ interface IConnector
         string $database,
         int $port = 3306,
         int $timeout = 3,
-        string $charset = 'utf8',
-        bool $autoConnect = false
+        string $charset = 'utf8'
     );
 
     /**
      * 连接数据库
      * @return bool 成功 true，失败 false
+     * @throws \Linvanda\MySQL\Exception\ConnectException
      */
     public function connect(): bool;
 

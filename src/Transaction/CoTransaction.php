@@ -217,7 +217,7 @@ class CoTransaction implements ITransaction
 
     private function getLastExecInfo(string $key)
     {
-        return $this->context['last_exec_info'] && $this->context['last_exec_info'][$key];
+        return isset($this->context['last_exec_info']) ? $this->context['last_exec_info'][$key] : '';
     }
 
     /**

@@ -2,6 +2,9 @@
 
 namespace Linvanda\MySQL\Pool;
 
+use Linvanda\MySQL\Exception\ConnectException;
+use Linvanda\MySQL\Exception\ConnectFatalException;
+use Linvanda\MySQL\Exception\PoolClosedException;
 use Swoole\Coroutine as co;
 use Linvanda\MySQL\Connector\IConnectorBuilder;
 use Linvanda\MySQL\Connector\IConnector;
@@ -18,6 +21,7 @@ class CoPool implements IPool
     protected const STATUS_OK = 1;
     protected const STATUS_UNAVAILABLE = 2;
     protected const STATUS_CLOSED = 3;
+    protected const MAX_WAIT_TIMEOUT_NUM = 200;
 
     protected static $instance;
 
@@ -27,12 +31,21 @@ class CoPool implements IPool
     protected $connectorBuilder;
     /** @var co\Channel */
     protected $writePool;
+    // 连接池大小
+    protected $size;
     // 记录每个连接的相关信息
     protected $connectsInfo = [];
+    // 当前存活的连接数（包括不在池中的）
     protected $connectNum;
+    // 读连接数
+    protected $readConnectNum;
+    // 写连接数
+    protected $writeConnectNum;
     protected $maxSleepTime;
     protected $maxExecCount;
     protected $status;
+    // 连续等待连接对象失败次数（超过一定次数说明很可能数据库连接暂不可用）
+    protected $waitTimeoutNum = 0;
 
     /**
      * CoPool constructor.
@@ -42,18 +55,19 @@ class CoPool implements IPool
      * @param int $maxExecCount
      * @throws \Exception
      */
-    protected function __construct(IConnectorBuilder $connectorBuilder, int $size, int $maxSleepTime = 600, int $maxExecCount = 1000)
+    protected function __construct(IConnectorBuilder $connectorBuilder, int $size = 15, int $maxSleepTime = 600, int $maxExecCount = 1000)
     {
         $this->connectorBuilder = $connectorBuilder;
         $this->readPool = new co\Channel($size);
         $this->writePool = new co\Channel($size);
+        $this->size = $size;
         $this->maxSleepTime = $maxSleepTime;
         $this->maxExecCount = $maxExecCount;
         $this->connectNum = 0;
         $this->status = self::STATUS_OK;
     }
 
-    public static function instance(IConnectorBuilder $connectorBuilder, int $size = 20, int $maxSleepTime = 600, int $maxExecCount = 1000): IPool
+    public static function instance(IConnectorBuilder $connectorBuilder, int $size = 20, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
     {
         if (!static::$instance) {
             static::$instance = new static($connectorBuilder, $size, $maxSleepTime, $maxExecCount);
@@ -66,32 +80,78 @@ class CoPool implements IPool
      * 从连接池中获取 MySQL 连接对象
      * @param string $type
      * @return IConnector|bool
-     * @throws \Exception
+     * @throws PoolClosedException
+     * @throws ConnectException
+     * @throws ConnectFatalException
      */
     public function getConnector(string $type = 'write'): IConnector
     {
         if (!$this->isOk()) {
-            return false;
+            throw new PoolClosedException("连接池已经关闭，无法获取连接");
         }
 
         $pool = $this->getPool($type);
+
         if ($pool->isEmpty()) {
-            // 创建新连接
-            $conn = $this->createConnector($type);
+            if (($type == 'read' ? $this->readConnectNum : $this->writeConnectNum) > $this->size * 3) {
+                // 远远超额，不能再创建，需等待
+                if ($this->waitTimeoutNum > self::MAX_WAIT_TIMEOUT_NUM) {
+                    // 超出了等待失败次数限制，直接抛异常
+                    throw new ConnectFatalException("多次获取连接超时，请检查数据库服务器状态");
+                }
 
-            if ($conn) {
-                goto done;
+                $conn = $pool->pop(4);
+                // 等待失败
+                if (!$conn) {
+                    switch ($pool->errCode) {
+                        case SWOOLE_CHANNEL_TIMEOUT:
+                            $this->waitTimeoutNum++;
+                            $errMsg = "获取连接超时";
+                            break;
+                        case SWOOLE_CHANNEL_CLOSED:
+                            $errMsg = "获取连接失败：连接池已关闭";
+                            break;
+                        default:
+                            $errMsg = "获取连接失败";
+                            break;
+                    }
+
+                    throw new ConnectException($errMsg);
+                }
+            } else {
+                try {
+                    // 创建新连接
+                    $conn = $this->createConnector($type);
+                } catch (ConnectException $exception) {
+                    if ($exception->getCode() == 1040) {
+                        // Too many connections,等待连接池
+                        $conn = $pool->pop(4);
+                    }
+
+                    if (!$conn) {
+                        if ($pool->errCode == SWOOLE_CHANNEL_TIMEOUT) {
+                            $this->waitTimeoutNum++;
+                        }
+
+                        throw new ConnectException($exception->getMessage(), $exception->getCode());
+                    }
+
+                    if (!$conn) {
+                        // 再次抛出
+                        throw new ConnectException($exception->getMessage(), $exception->getCode());
+                    }
+                }
             }
-
-            return $conn;
+        } else {
+            // 从连接池获取
+            $conn = $pool->pop(1);
         }
 
-        $conn = $pool->pop(2);
-
-        done:
         $connectInfo = $this->connectInfo($conn);
         $connectInfo->popTime = time();
         $connectInfo->status = ConnectorInfo::STATUS_BUSY;
+        // 等待次数清零
+        $this->waitTimeoutNum = 0;
 
         return $conn;
     }
@@ -110,14 +170,15 @@ class CoPool implements IPool
         $connInfo = $this->connectInfo($connector);
         $pool = $this->getPool($connInfo->type);
 
-        // 先改变状态
-        $connInfo && $connInfo->status = ConnectorInfo::STATUS_IDLE;
-
         if (!$this->isOk() || $pool->isFull() || !$this->isHealthy($connector)) {
             return $this->closeConnector($connector);
         }
 
-        $connInfo->pushTime = time();
+        if ($connInfo) {
+            $connInfo->status = ConnectorInfo::STATUS_IDLE;
+            $connInfo->pushTime = time();
+        }
+
         return $pool->push($connector);
     }
 
@@ -157,7 +218,7 @@ class CoPool implements IPool
         }
 
         $connector->close();
-        $this->connectNum--;
+        $this->untickConnectNum($this->connectsInfo[$this->getObjectId($connector)]->type);
         unset($this->connectsInfo[$this->getObjectId($connector)]);
 
         return true;
@@ -182,23 +243,43 @@ class CoPool implements IPool
     }
 
     /**
+     * 创建新连接对象
      * @param string $type
      * @return IConnector
-     * @throws \Exception
+     * @throws \Linvanda\MySQL\Exception\ConnectException
      */
     protected function createConnector($type = 'write'): IConnector
     {
         $conn = $this->connectorBuilder->build($type);
 
         if ($conn) {
-            $this->connectNum++;
-            $this->connectsInfo[$this->getObjectId($conn)] = new ConnectorInfo($conn, $type);
-
             // 建立数据库连接
             $conn->connect();
+            $this->tickConnectNum($type);
+            $this->connectsInfo[$this->getObjectId($conn)] = new ConnectorInfo($conn, $type);
         }
 
         return $conn;
+    }
+
+    protected function tickConnectNum(string $type)
+    {
+        $this->changeConnectNum($type, 1);
+    }
+
+    protected function untickConnectNum(string $type)
+    {
+        $this->changeConnectNum($type, -1);
+    }
+
+    private function changeConnectNum(string $type, $num)
+    {
+        $this->connectNum = $this->connectNum + $num;
+        if ($type == 'read') {
+            $this->readConnectNum = $this->readConnectNum + $num;
+        } else {
+            $this->writeConnectNum = $this->writeConnectNum + $num;
+        }
     }
 
     /**

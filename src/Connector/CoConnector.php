@@ -2,6 +2,7 @@
 
 namespace Linvanda\MySQL\Connector;
 
+use Linvanda\MySQL\Exception\ConnectException;
 use Swoole\Coroutine\MySQL;
 
 /**
@@ -26,8 +27,7 @@ class CoConnector implements IConnector
         string $database,
         int $port = 3306,
         int $timeout = 3,
-        string $charset = 'utf8',
-        bool $autoConnect = false
+        string $charset = 'utf8'
     ) {
         $this->config = [
             'host' => $host,
@@ -42,10 +42,6 @@ class CoConnector implements IConnector
         ];
 
         $this->mysql = new MySQL();
-
-        if ($autoConnect) {
-            $this->connect();
-        }
     }
 
     public function __destruct()
@@ -53,13 +49,23 @@ class CoConnector implements IConnector
         $this->close();
     }
 
+    /**
+     * @return bool
+     * @throws ConnectException
+     */
     public function connect(): bool
     {
         if ($this->mysql->connected) {
             return true;
         }
 
-        return $this->mysql->connect($this->config);
+        $conn = $this->mysql->connect($this->config);
+
+        if ($this->mysql->connect_error) {
+            throw new ConnectException($this->mysql->connect_error, $this->mysql->connect_errno);
+        }
+
+        return $conn;
     }
 
     /**
