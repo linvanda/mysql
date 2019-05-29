@@ -23,7 +23,6 @@ Trait Builder
     private $having;
     private $values;
     private $set;
-    private $forceIndex;
     private $whereParams = [];
     private $joinParams = [];
     private $havingParams = [];
@@ -43,10 +42,7 @@ Trait Builder
         }
 
         $this->type = 'select';
-
-        if ($fields) {
-            $this->fields($fields);
-        }
+        $this->fields($fields);
 
         return $this;
     }
@@ -150,11 +146,6 @@ Trait Builder
         $this->table = $this->plainText($table);
 
         return $this;
-    }
-
-    public function forceIndex(string $index)
-    {
-        $this->forceIndex = 'force index(' . $this->plainText($index) . ')';
     }
 
     /**
@@ -327,7 +318,7 @@ Trait Builder
     /**
      * 重置某些或整个 SQL 子句
      * 不提供 $type，则整个重置，否则重置指定的子句
-     * 可 reset 的子句有：fields,where,join,limit,orderBy,groupBy,having,forceIndex
+     * 可 reset 的子句有：fields,where,join,limit,orderBy,groupBy,having
      * @param string $type
      * @return Builder
      */
@@ -349,7 +340,7 @@ Trait Builder
             }
         } else {
             $this->fields = $this->join = $this->orderBy = $this->groupBy = $this->set = '';
-            $this->forceIndex = $this->table = $this->type = $this->values = $this->where = $this->having = '';
+            $this->table = $this->type = $this->values = $this->where = $this->having = '';
             $this->whereParams = $this->joinParams = $this->havingParams = $this->valuesParams = $this->setParams = [];
             $this->limit = $this->offset = null;
         }
@@ -447,7 +438,6 @@ Trait Builder
                     'from',
                     $this->table,
                     $this->join,
-                    $this->forceIndex,
                     $this->where,
                     $this->groupBy,
                     $this->having,

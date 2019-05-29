@@ -66,9 +66,9 @@ ET;
 function create_query()
 {
     // 请根据实际情况配置数据库信息，账号需要有 create table、drop table 以及增删改查的权限
-    $config = new \Linvanda\MySQL\Connector\DBConfig('192.168.85.135', 'root', 'weicheche', 'user_center');
+    $config = new \Linvanda\MySQL\Connector\DBConfig('192.168.85.67', 'yanpinpin', 'yanpinpin@123', 'user_center');
     $connBuilder = new \Linvanda\MySQL\Connector\CoConnectorBuilder($config);
-    $pool = \Linvanda\MySQL\Pool\CoPool::instance($connBuilder, 15);
+    $pool = \Linvanda\MySQL\Pool\CoPool::instance($connBuilder, 20);
     $trans = new \Linvanda\MySQL\Transaction\CoTransaction($pool);
     $query = new \Linvanda\MySQL\Query($trans);
 
@@ -89,7 +89,7 @@ function multi_insert($use_trans = true)
         $users = [];
         $userPartnerIds = [];
         $merchantUsers = [];
-        for ($j = 0; $j < 5; $j++) {
+        for ($j = 0; $j < 3; $j++) {
             $uid = $id . $cuid;
             $users[] = [
                 'uid' => $uid,
@@ -144,10 +144,52 @@ function request_insert($send_num = 2000, $use_trans = true)
 {
     // 模拟高并发请求
     for ($i = 0; $i < $send_num; $i++) {
-        // 模拟请求时延: 1ms - 0.05s
-        co::sleep(mt_rand(1, 50)/1000);
+        // 模拟请求时延
+        co::sleep(10/1000);
         go(function () use ($use_trans) {
             multi_insert($use_trans);
+        });
+    }
+}
+
+function multi_select()
+{
+    // 每个协程创建单独的 Query，这些 Query 共用 Pool
+    $query = create_query();
+
+    try {
+        $result = $query->select(['users.name'])
+            ->fields(['users.uid'])
+            ->from('users_test_abcdef users')
+            ->join('user_partner_ids_test_abcdef part', ["users.uid=part.uid and users.uid=:uid", ['uid' => 333]], 'left')
+            ->join('merchant_users_test_abcdef merchant', 'merchant.uid=users.uid')
+            ->where(["users.phone=:phone", ['phone' => '189-0-2-33']])
+            ->limit(1000, 3)
+            ->groupBy('users.phone')
+            ->having(['count(users.phone)>:cnt', ['cnt' => 34]])
+            ->orderBy("users.uid desc")
+            ->execute();
+    } catch (\Exception $exception) {
+        echo "exception:" . $exception->getMessage() . "==".$exception->getCode()."\n";
+    }
+
+    if ($result === false) {
+        echo $query->lastError();
+        echo "query error\n";
+    } else {
+        echo "cnt:".count($result)."\n";
+    }
+    var_export($query->rawSql());
+}
+
+function request_select($send_num = 2000)
+{
+    // 模拟高并发请求
+    for ($i = 0; $i < $send_num; $i++) {
+        // 模拟请求时延
+        co::sleep(40/1000);
+        go(function () {
+            multi_select();
         });
     }
 }
@@ -156,10 +198,10 @@ function request_insert($send_num = 2000, $use_trans = true)
 // 测试脚本
 go(function () {
     // 重建表
-    create_table(create_query());
+//    create_table(create_query());
 
-    // 并发请求插入
+    // 并发请求查询
     TimeTick::tick('start');
-    request_insert( 1000);
+    request_select( 5000);
     TimeTick::memory();
 });

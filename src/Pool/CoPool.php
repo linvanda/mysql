@@ -55,7 +55,7 @@ class CoPool implements IPool
      * @param int $maxExecCount
      * @throws \Exception
      */
-    protected function __construct(IConnectorBuilder $connectorBuilder, int $size = 15, int $maxSleepTime = 600, int $maxExecCount = 1000)
+    protected function __construct(IConnectorBuilder $connectorBuilder, int $size = 25, int $maxSleepTime = 600, int $maxExecCount = 1000)
     {
         $this->connectorBuilder = $connectorBuilder;
         $this->readPool = new co\Channel($size);
@@ -70,7 +70,7 @@ class CoPool implements IPool
         $this->status = self::STATUS_OK;
     }
 
-    public static function instance(IConnectorBuilder $connectorBuilder, int $size = 15, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
+    public static function instance(IConnectorBuilder $connectorBuilder, int $size = 25, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
     {
         if (!static::$instance) {
             static::$instance = new static($connectorBuilder, $size, $maxSleepTime, $maxExecCount);
@@ -96,14 +96,15 @@ class CoPool implements IPool
         $pool = $this->getPool($type);
 
         if ($pool->isEmpty()) {
-            if (($type == 'read' ? $this->readConnectNum : $this->writeConnectNum) > $this->size * 3) {
-                // 超额，不能再创建，需等待
+            // 超额，不能再创建，需等待
+            if (($type == 'read' ? $this->readConnectNum : $this->writeConnectNum) > $this->size * 6) {
+                // 放置数据库临时不可用，多次等待失败，则直接返回
                 if ($this->waitTimeoutNum > self::MAX_WAIT_TIMEOUT_NUM) {
                     // 超出了等待失败次数限制，直接抛异常
                     throw new ConnectFatalException("多次获取连接超时，请检查数据库服务器状态");
                 }
 
-                $conn = $pool->pop(3);
+                $conn = $pool->pop(4);
 
                 // 等待失败
                 if (!$conn) {
@@ -129,7 +130,7 @@ class CoPool implements IPool
                 } catch (ConnectException $exception) {
                     if ($exception->getCode() == 1040) {
                         // Too many connections,等待连接池
-                        $conn = $pool->pop(3);
+                        $conn = $pool->pop(4);
                     }
 
                     if (!$conn) {
@@ -220,7 +221,6 @@ class CoPool implements IPool
         $connector->close();
         $this->untickConnectNum($this->connectsInfo[$objId]->type);
         unset($this->connectsInfo[$objId]);
-
         return true;
     }
 
@@ -288,6 +288,7 @@ class CoPool implements IPool
         } else {
             $this->writeConnectNum = $this->writeConnectNum + $num;
         }
+        echo "conn num--" . $this->connectNum."\n";
     }
 
     /**
