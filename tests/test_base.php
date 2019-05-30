@@ -161,13 +161,9 @@ function multi_select()
         $result = $query->select(['users.name'])
             ->fields(['users.uid'])
             ->from('users_test_abcdef users')
-            ->join('user_partner_ids_test_abcdef part', ["users.uid=part.uid and users.uid=:uid", ['uid' => 333]], 'left')
+            ->join('user_partner_ids_test_abcdef part', ["users.uid=part.uid"], 'left')
             ->join('merchant_users_test_abcdef merchant', 'merchant.uid=users.uid')
-            ->where(["users.phone=:phone", ['phone' => '189-0-2-33']])
-            ->limit(1000, 3)
-            ->groupBy('users.phone')
-            ->having(['count(users.phone)>:cnt', ['cnt' => 34]])
-            ->orderBy("users.uid desc")
+            ->limit(500, 3)
             ->execute();
     } catch (\Exception $exception) {
         echo "exception:" . $exception->getMessage() . "==".$exception->getCode()."\n";
@@ -177,9 +173,8 @@ function multi_select()
         echo $query->lastError();
         echo "query error\n";
     } else {
-        echo "cnt:".count($result)."\n";
+//        echo "cnt:".count($result)."\n";
     }
-    var_export($query->rawSql());
 }
 
 function request_select($send_num = 2000)
@@ -187,7 +182,7 @@ function request_select($send_num = 2000)
     // 模拟高并发请求
     for ($i = 0; $i < $send_num; $i++) {
         // 模拟请求时延
-        co::sleep(40/1000);
+        co::sleep(5/1000);
         go(function () {
             multi_select();
         });
@@ -202,6 +197,6 @@ go(function () {
 
     // 并发请求查询
     TimeTick::tick('start');
-    request_select( 5000);
+    request_select( 40000);
     TimeTick::memory();
 });

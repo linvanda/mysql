@@ -246,17 +246,7 @@ class CoTransaction implements ITransaction
             return true;
         }
 
-        // 保存 SQL
-        $this->saveSQL($sqlInfo);
-
         return $this->connector()->query($sqlInfo[0], $sqlInfo[1]);
-    }
-
-    private function saveSQL(array $sqlInfo)
-    {
-        $sqlPool = $this->context['sql'] ?? [];
-        $sqlPool[] = $sqlInfo;
-        $this->context['sql'] = $sqlPool;
     }
 
     private function clearSQL()

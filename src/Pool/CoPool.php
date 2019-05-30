@@ -288,7 +288,6 @@ class CoPool implements IPool
         } else {
             $this->writeConnectNum = $this->writeConnectNum + $num;
         }
-        echo "conn num--" . $this->connectNum."\n";
     }
 
     /**
