@@ -73,7 +73,7 @@ class CoConnectorBuilder implements IConnectorBuilder
      */
     private static function calcKey(DBConfig $writeConfig = null, array $readConfigs = []): string
     {
-        function joinStr($conf)
+        $joinStr = function ($conf)
         {
             $arr = [
                 $conf->host,
@@ -86,15 +86,15 @@ class CoConnectorBuilder implements IConnectorBuilder
             ];
             sort($arr);
             return implode('-', $arr);
-        }
+        };
 
         $readArr = [];
         foreach ($readConfigs as $readConfig) {
-            $readArr[] = joinStr($readConfig);
+            $readArr[] = $joinStr($readConfig);
         }
 
         sort($readArr);
 
-        return md5(joinStr($writeConfig) . implode('$', $readArr));
+        return md5($joinStr($writeConfig) . implode('$', $readArr));
     }
 }
