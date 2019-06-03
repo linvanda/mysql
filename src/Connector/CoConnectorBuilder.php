@@ -29,7 +29,7 @@ class CoConnectorBuilder implements IConnectorBuilder
         }
 
         $key = self::calcKey($writeConfig, $readConfigs);
-        if (!self::$container[$key]) {
+        if (!isset(self::$container[$key])) {
             $builder = new static($writeConfig, $readConfigs);
             $builder->key = $key;
             self::$container[$key] = $builder;
