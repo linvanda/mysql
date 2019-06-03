@@ -15,4 +15,5 @@ interface IConnectorBuilder
      * @return IConnector
      */
     public function build(string $connType = 'write'): IConnector;
+    public function getKey(): string;
 }

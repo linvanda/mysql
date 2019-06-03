@@ -23,7 +23,7 @@ class CoPool implements IPool
     protected const STATUS_CLOSED = 3;
     protected const MAX_WAIT_TIMEOUT_NUM = 200;
 
-    protected static $instance;
+    protected static $container = [];
 
     /** @var IConnectorBuilder */
     protected $readPool;
@@ -70,13 +70,20 @@ class CoPool implements IPool
         $this->status = self::STATUS_OK;
     }
 
+    /**
+     * @param IConnectorBuilder $connectorBuilder
+     * @param int $size
+     * @param int $maxSleepTime
+     * @param int $maxExecCount
+     * @return CoPool
+     */
     public static function instance(IConnectorBuilder $connectorBuilder, int $size = 25, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
     {
-        if (!static::$instance) {
-            static::$instance = new static($connectorBuilder, $size, $maxSleepTime, $maxExecCount);
+        if (!static::$container[$connectorBuilder->getKey()]) {
+            static::$container[$connectorBuilder->getKey()] = new static($connectorBuilder, $size, $maxSleepTime, $maxExecCount);
         }
 
-        return static::$instance;
+        return static::$container[$connectorBuilder->getKey()];
     }
 
     /**
