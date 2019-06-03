@@ -79,7 +79,7 @@ class CoPool implements IPool
      */
     public static function instance(IConnectorBuilder $connectorBuilder, int $size = 25, int $maxSleepTime = 600, int $maxExecCount = 1000): CoPool
     {
-        if (!static::$container[$connectorBuilder->getKey()]) {
+        if (!isset(static::$container[$connectorBuilder->getKey()])) {
             static::$container[$connectorBuilder->getKey()] = new static($connectorBuilder, $size, $maxSleepTime, $maxExecCount);
         }
 
