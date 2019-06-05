@@ -1,11 +1,11 @@
 <?php
 
-namespace Linvanda\MySQL\Transaction;
+namespace Devar\MySQL\Transaction;
 
 /**
  * 事务接口
  * Interface ITransaction
- * @package Linvanda\MySQL\Transaction
+ * @package Devar\MySQL\Transaction
  */
 interface ITransaction
 {

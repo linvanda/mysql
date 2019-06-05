@@ -1,14 +1,14 @@
 <?php
 
-namespace Linvanda\MySQL\Connector;
+namespace Devar\MySQL\Connector;
 
-use Linvanda\MySQL\Exception\ConnectException;
+use Devar\MySQL\Exception\ConnectException;
 use Swoole\Coroutine\MySQL;
 
 /**
  * 协程版连接器
  * Class CoConnector
- * @package Linvanda\MySQL\Connector
+ * @package Devar\MySQL\Connector
  */
 class CoConnector implements IConnector
 {

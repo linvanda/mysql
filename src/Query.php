@@ -1,13 +1,13 @@
 <?php
 
-namespace Linvanda\MySQL;
+namespace Devar\MySQL;
 
-use Linvanda\MySQL\Transaction\ITransaction;
+use Devar\MySQL\Transaction\ITransaction;
 
 /**
  * 查询器，对外暴露的 API
  * Class Query
- * @package Linvanda\MySQL
+ * @package Devar\MySQL
  */
 class Query
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Linvanda\MySQL\Exception;
+namespace Devar\MySQL\Exception;
 
 /**
  * 致命异常
  * Class ConnectFatalException
- * @package Linvanda\MySQL\Exception
+ * @package Devar\MySQL\Exception
  */
 class ConnectFatalException extends ConnectException
 {

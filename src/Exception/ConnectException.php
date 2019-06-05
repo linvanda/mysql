@@ -1,6 +1,6 @@
 <?php
 
-namespace Linvanda\MySQL\Exception;
+namespace Devar\MySQL\Exception;
 
 class ConnectException extends \Exception
 {

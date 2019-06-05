@@ -1,13 +1,13 @@
 <?php
 
-namespace Linvanda\MySQL\Pool;
+namespace Devar\MySQL\Pool;
 
-use Linvanda\MySQL\Connector\IConnector;
+use Devar\MySQL\Connector\IConnector;
 
 /**
  * 连接池
  * Interface IPool
- * @package Linvanda\MySQL\Pool
+ * @package Devar\MySQL\Pool
  */
  interface IPool
  {
@@ -15,9 +15,9 @@ use Linvanda\MySQL\Connector\IConnector;
       * 从连接池中获取 MySQL 连接对象
       * @param string $type
       * @return IConnector
-      * @throws \Linvanda\MySQL\Exception\PoolClosedException
-      * @throws \Linvanda\MySQL\Exception\ConnectException
-      * @throws \Linvanda\MySQL\Exception\ConnectFatalException
+      * @throws \Devar\MySQL\Exception\PoolClosedException
+      * @throws \Devar\MySQL\Exception\ConnectException
+      * @throws \Devar\MySQL\Exception\ConnectFatalException
       */
     public function getConnector(string $type = 'write'): IConnector;
      /**

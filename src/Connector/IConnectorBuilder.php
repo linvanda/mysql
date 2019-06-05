@@ -1,11 +1,11 @@
 <?php
 
-namespace Linvanda\MySQL\Connector;
+namespace Devar\MySQL\Connector;
 
 /**
  * IConnector 生成器
  * Interface IConnectorBuilder
- * @package Linvanda\MySQL\Connector
+ * @package Devar\MySQL\Connector
  */
 interface IConnectorBuilder
 {

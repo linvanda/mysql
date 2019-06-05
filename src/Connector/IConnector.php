@@ -1,11 +1,11 @@
 <?php
 
-namespace Linvanda\MySQL\Connector;
+namespace Devar\MySQL\Connector;
 
 /**
  * 连接器接口
  * Interface IConnector
- * @package Linvanda\MySQL\Connector
+ * @package Devar\MySQL\Connector
  */
 interface IConnector
 {
@@ -31,7 +31,7 @@ interface IConnector
     /**
      * 连接数据库
      * @return bool 成功 true，失败 false
-     * @throws \Linvanda\MySQL\Exception\ConnectException
+     * @throws \Devar\MySQL\Exception\ConnectException
      */
     public function connect(): bool;
 

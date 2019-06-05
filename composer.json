@@ -1,5 +1,5 @@
 {
-    "name": "linvanda/mysql",
+    "name": "devar/mysql",
     "type": "library",
     "authors": [
         {
@@ -13,8 +13,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Linvanda\\MySQL\\": "src/",
-            "Linvanda\\MySQL\\Test\\": "tests/"
+            "Devar\\MySQL\\": "src/",
+            "Devar\\MySQL\\Test\\": "tests/"
         }
     }
 }
