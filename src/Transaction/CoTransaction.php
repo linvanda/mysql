@@ -1,17 +1,17 @@
 <?php
 
-namespace Devar\MySQL\Transaction;
+namespace Dev\MySQL\Transaction;
 
-use Devar\MySQL\Exception\ConnectException;
-use Devar\MySQL\Exception\TransactionException;
-use Devar\MySQL\Pool\IPool;
-use Devar\MySQL\Connector\IConnector;
+use Dev\MySQL\Exception\ConnectException;
+use Dev\MySQL\Exception\TransactionException;
+use Dev\MySQL\Pool\IPool;
+use Dev\MySQL\Connector\IConnector;
 
 /**
  * 协程版事务管理器
  * 注意：事务开启直到提交/回滚的过程中会一直占用某个 IConnector 实例，如果有很多长事务，则会很快耗完连接池资源
  * Class Transaction
- * @package Devar\MySQL\Transaction
+ * @package Dev\MySQL\Transaction
  */
 class CoTransaction implements ITransaction
 {
@@ -267,9 +267,9 @@ class CoTransaction implements ITransaction
      * 获取连接资源
      * @param bool $usePool
      * @return IConnector
-     * @throws \Devar\MySQL\Exception\ConnectException
-     * @throws \Devar\MySQL\Exception\ConnectFatalException
-     * @throws \Devar\MySQL\Exception\PoolClosedException
+     * @throws \Dev\MySQL\Exception\ConnectException
+     * @throws \Dev\MySQL\Exception\ConnectFatalException
+     * @throws \Dev\MySQL\Exception\PoolClosedException
      */
     private function connector(bool $usePool = true)
     {

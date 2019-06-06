@@ -1,13 +1,13 @@
 <?php
 
-namespace Devar\MySQL;
+namespace Dev\MySQL;
 
-use Devar\MySQL\Transaction\ITransaction;
+use Dev\MySQL\Transaction\ITransaction;
 
 /**
  * 查询器，对外暴露的 API
  * Class Query
- * @package Devar\MySQL
+ * @package Dev\MySQL
  */
 class Query
 {

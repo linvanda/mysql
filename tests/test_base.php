@@ -3,7 +3,7 @@
 require '../vendor/autoload.php';
 
 use Swoole\Coroutine as Co;
-use Devar\MySQL\Test\TimeTick;
+use Dev\MySQL\Test\TimeTick;
 
 error_reporting(E_ERROR);
 
@@ -29,7 +29,7 @@ function randomNumber($len = 10)
     return $s;
 }
 
-function create_table(\Devar\MySQL\Query $query)
+function create_table(\Dev\MySQL\Query $query)
 {
     $table_user_sql = "CREATE TABLE `users_test_abcdef`(`uid` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(20) DEFAULT NULL,`nickname` varchar(30) NOT NULL DEFAULT '' COMMENT '昵称',`phone` varchar(20) DEFAULT NULL COMMENT '手机号，唯一',`email` varchar(50) DEFAULT NULL,`gender` tinyint(11) DEFAULT NULL COMMENT '性别，1男，0女',`birthday` date DEFAULT NULL,`id_number` varchar(30) NOT NULL DEFAULT '' COMMENT '证件号码',`id_number_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '证件类型：1身份证，2军官证，3港澳通行证，4护照',`headurl` varchar(400) DEFAULT NULL,`tinyheadurl` varchar(400) DEFAULT NULL,`invite_code` varchar(12) DEFAULT NULL,`update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',`channel` varchar(20) DEFAULT NULL,`birthday_change` tinyint(4) DEFAULT '0',`del_time` int(11) NOT NULL DEFAULT '0' COMMENT '删除时间',`regtime` datetime DEFAULT NULL,PRIMARY KEY (`uid`),UNIQUE KEY `IDX_PHONE` (`phone`)) ENGINE=InnoDB AUTO_INCREMENT=102002 DEFAULT CHARSET=utf8 COMMENT='用户主表'";
 
@@ -66,11 +66,11 @@ ET;
 function create_query()
 {
     // 请根据实际情况配置数据库信息，账号需要有 create table、drop table 以及增删改查的权限
-    $config = new \Devar\MySQL\Connector\DBConfig('192.168.85.67', 'yanpinpin', 'yanpinpin@123', 'user_center');
-    $connBuilder = new \Devar\MySQL\Connector\CoConnectorBuilder($config);
-    $pool = \Devar\MySQL\Pool\CoPool::instance($connBuilder, 20);
-    $trans = new \Devar\MySQL\Transaction\CoTransaction($pool);
-    $query = new \Devar\MySQL\Query($trans);
+    $config = new \Dev\MySQL\Connector\DBConfig('192.168.85.67', 'yanpinpin', 'yanpinpin@123', 'user_center');
+    $connBuilder = new \Dev\MySQL\Connector\CoConnectorBuilder($config);
+    $pool = \Dev\MySQL\Pool\CoPool::instance($connBuilder, 20);
+    $trans = new \Dev\MySQL\Transaction\CoTransaction($pool);
+    $query = new \Dev\MySQL\Query($trans);
 
     return $query;
 }

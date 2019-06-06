@@ -1,6 +1,6 @@
 <?php
 
-namespace Devar\MySQL\Test;
+namespace Dev\MySQL\Test;
 
 use Swoole\Coroutine as co;
 

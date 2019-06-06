@@ -1,11 +1,11 @@
 <?php
 
-namespace Devar\MySQL;
+namespace Dev\MySQL;
 
 /**
  * 表达式
  * Class Expression
- * @package Devar\MySQL
+ * @package Dev\MySQL
  */
 class Expression
 {

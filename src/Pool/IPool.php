@@ -1,13 +1,13 @@
 <?php
 
-namespace Devar\MySQL\Pool;
+namespace Dev\MySQL\Pool;
 
-use Devar\MySQL\Connector\IConnector;
+use Dev\MySQL\Connector\IConnector;
 
 /**
  * 连接池
  * Interface IPool
- * @package Devar\MySQL\Pool
+ * @package Dev\MySQL\Pool
  */
  interface IPool
  {
@@ -15,9 +15,9 @@ use Devar\MySQL\Connector\IConnector;
       * 从连接池中获取 MySQL 连接对象
       * @param string $type
       * @return IConnector
-      * @throws \Devar\MySQL\Exception\PoolClosedException
-      * @throws \Devar\MySQL\Exception\ConnectException
-      * @throws \Devar\MySQL\Exception\ConnectFatalException
+      * @throws \Dev\MySQL\Exception\PoolClosedException
+      * @throws \Dev\MySQL\Exception\ConnectException
+      * @throws \Dev\MySQL\Exception\ConnectFatalException
       */
     public function getConnector(string $type = 'write'): IConnector;
      /**

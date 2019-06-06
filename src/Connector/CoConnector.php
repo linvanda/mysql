@@ -1,14 +1,14 @@
 <?php
 
-namespace Devar\MySQL\Connector;
+namespace Dev\MySQL\Connector;
 
-use Devar\MySQL\Exception\ConnectException;
+use Dev\MySQL\Exception\ConnectException;
 use Swoole\Coroutine\MySQL;
 
 /**
  * 协程版连接器
  * Class CoConnector
- * @package Devar\MySQL\Connector
+ * @package Dev\MySQL\Connector
  */
 class CoConnector implements IConnector
 {

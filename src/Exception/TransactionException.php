@@ -1,6 +1,6 @@
 <?php
 
-namespace Devar\MySQL\Exception;
+namespace Dev\MySQL\Exception;
 
 class TransactionException extends \Exception
 {

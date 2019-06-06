@@ -1,6 +1,6 @@
 <?php
 
-namespace Devar\MySQL\Connector;
+namespace Dev\MySQL\Connector;
 
 class CoConnectorBuilder implements IConnectorBuilder
 {

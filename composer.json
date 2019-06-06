@@ -1,5 +1,5 @@
 {
-    "name": "devar/mysql",
+    "name": "dev/mysql",
     "type": "library",
     "authors": [
         {
@@ -13,8 +13,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Devar\\MySQL\\": "src/",
-            "Devar\\MySQL\\Test\\": "tests/"
+            "Dev\\MySQL\\": "src/",
+            "Dev\\MySQL\\Test\\": "tests/"
         }
     }
 }

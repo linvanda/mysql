@@ -1,11 +1,11 @@
 <?php
 
-namespace Devar\MySQL\Connector;
+namespace Dev\MySQL\Connector;
 
 /**
  * IConnector 生成器
  * Interface IConnectorBuilder
- * @package Devar\MySQL\Connector
+ * @package Dev\MySQL\Connector
  */
 interface IConnectorBuilder
 {

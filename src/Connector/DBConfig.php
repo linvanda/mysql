@@ -1,6 +1,6 @@
 <?php
 
-namespace Devar\MySQL\Connector;
+namespace Dev\MySQL\Connector;
 
 /**
  * MySQL 数据库配置 DTO 对象

@@ -1,20 +1,20 @@
 <?php
 
-namespace Devar\MySQL\Pool;
+namespace Dev\MySQL\Pool;
 
 use Swoole\Coroutine as co;
-use Devar\MySQL\Exception\ConnectException;
-use Devar\MySQL\Exception\ConnectFatalException;
-use Devar\MySQL\Exception\PoolClosedException;
-use Devar\MySQL\Connector\IConnectorBuilder;
-use Devar\MySQL\Connector\IConnector;
-use Devar\MySQL\Connector\ConnectorInfo;
+use Dev\MySQL\Exception\ConnectException;
+use Dev\MySQL\Exception\ConnectFatalException;
+use Dev\MySQL\Exception\PoolClosedException;
+use Dev\MySQL\Connector\IConnectorBuilder;
+use Dev\MySQL\Connector\IConnector;
+use Dev\MySQL\Connector\ConnectorInfo;
 
 /**
  * 协程版连接池
  * 注意：一旦连接池被销毁，连接池持有和分配出去的连接对象都会被关闭（哪怕该连接对象还在被外面使用）
  * Class CoPool
- * @package Devar\MySQL\Pool
+ * @package Dev\MySQL\Pool
  */
 class CoPool implements IPool
 {
@@ -253,7 +253,7 @@ class CoPool implements IPool
      * 创建新连接对象
      * @param string $type
      * @return IConnector
-     * @throws \Devar\MySQL\Exception\ConnectException
+     * @throws \Dev\MySQL\Exception\ConnectException
      */
     protected function createConnector($type = 'write'): IConnector
     {
