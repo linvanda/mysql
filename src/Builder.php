@@ -33,7 +33,7 @@ Trait Builder
     /**
      * 只能调用一次
      * @param null $fields
-     * @return Builder
+     * @return Query
      */
     public function select($fields = null)
     {
@@ -50,7 +50,7 @@ Trait Builder
     /**
      * 多次调用会覆盖前面的
      * @param string|array $fields
-     * @return Builder
+     * @return Query
      */
     public function fields($fields)
     {
@@ -72,7 +72,7 @@ Trait Builder
     /**
      * 只能调用一次
      * @param string $table
-     * @return Builder
+     * @return Query
      */
     public function update(string $table)
     {
@@ -89,7 +89,7 @@ Trait Builder
     /**
      * 只能调用一次
      * @param string $table
-     * @return Builder
+     * @return Query
      */
     public function insert(string $table)
     {
@@ -106,7 +106,7 @@ Trait Builder
     /**
      * 只能调用一次
      * @param string $table
-     * @return Builder
+     * @return Query
      */
     public function replace(string $table)
     {
@@ -123,7 +123,7 @@ Trait Builder
     /**
      * 只能调用一次
      * @param string $table
-     * @return Builder
+     * @return Query
      */
     public function delete(string $table)
     {
@@ -139,7 +139,7 @@ Trait Builder
 
     /**
      * @param string $table 如 'users'，'users as u'
-     * @return Builder
+     * @return Query
      */
     public function from(string $table)
     {
@@ -155,7 +155,7 @@ Trait Builder
      * @param string|array $table
      * @param $condition
      * @param string $type
-     * @return Builder
+     * @return Query
      * @throws \Exception
      */
     public function join($table, $condition = '', $type = 'inner')
@@ -201,7 +201,7 @@ Trait Builder
     /**
      * @param int $limit
      * @param int $offset 从 0 开始
-     * @return Builder
+     * @return Query
      */
     public function limit(int $limit, int $offset = 0)
     {
@@ -214,7 +214,7 @@ Trait Builder
     /**
      * 多次调用会覆盖前面的
      * @param string $fields 如 'uid,age'
-     * @return Builder
+     * @return Query
      */
     public function groupBy(string $fields)
     {
@@ -253,7 +253,7 @@ Trait Builder
      * 和 update 配合使用，对应 SQL 的 set
      * 多次调用会覆盖前面的
      * @param array $data ['name' => '里斯', 'utime' => new Expression('unix_timestamp()')]
-     * @return Builder
+     * @return Query
      */
     public function set(array $data)
     {
@@ -284,7 +284,7 @@ Trait Builder
      * 重复调用会覆盖前面的
      * 批量插入请传入二维数组
      * @param array $insertData ['name' => '张三', 'time' => new Expression('unix_timestamp()')]
-     * @return $this
+     * @return Query
      */
     public function values(array $insertData)
     {
@@ -320,7 +320,7 @@ Trait Builder
      * 不提供 $type，则整个重置，否则重置指定的子句
      * 可 reset 的子句有：fields,where,join,limit,orderBy,groupBy,having
      * @param string $type
-     * @return Builder
+     * @return Query
      */
     public function reset(string $type = '')
     {
