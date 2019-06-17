@@ -2,6 +2,7 @@
 
 namespace Dev\MySQL;
 
+use Dev\MySQL\Exception\DBException;
 use Dev\MySQL\Transaction\ITransaction;
 
 /**
@@ -80,7 +81,12 @@ class Query
      */
     public function list(): array
     {
-        return $this->transaction->command(...$this->compile());
+        $list = $this->transaction->command(...$this->compile());
+        if ($this->lastErrorNo()) {
+            throw new DBException($this->lastError(), $this->lastErrorNo());
+        }
+
+        return $list;
     }
 
     /**
@@ -92,8 +98,8 @@ class Query
     {
         $list = $this->transaction->command(...$this->limit(1)->compile());
 
-        if ($list === false) {
-            return false;
+        if ($this->lastErrorNo()) {
+            throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
         if ($list) {
@@ -106,13 +112,14 @@ class Query
     /**
      * 便捷方法：查询某个字段的值
      * @return mixed
+     * @throws DBException
      */
     public function column()
     {
         $res = $this->transaction->command(...$this->compile());
 
-        if ($res === false) {
-            return false;
+        if ($this->lastErrorNo()) {
+            throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
         return $res ? reset($res[0]) : '';
@@ -121,6 +128,7 @@ class Query
     /**
      * 便捷方法：分页查询
      * @return array|false
+     * @throws DBException
      */
     public function page(): array
     {
@@ -129,8 +137,8 @@ class Query
         $offset = $this->offset ?? 0;
 
         $countRes = $this->transaction->command(...$this->fields('count(*) as cnt')->reset('limit')->compile(false));
-        if ($countRes === false) {
-            return false;
+        if ($this->lastErrorNo()) {
+            throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
         if (!$countRes || !$countRes[0]['cnt']) {
@@ -140,8 +148,8 @@ class Query
 
         $data = $this->transaction->command(...$this->fields($fields)->limit($limit, $offset)->compile());
 
-        if ($data === false) {
-            return false;
+        if ($this->lastErrorNo()) {
+            throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
         return ['total' => $countRes[0]['cnt'], 'data' => $data];
@@ -160,10 +168,16 @@ class Query
     public function execute(string $preSql = '', array $params = [])
     {
         if (!func_num_args()) {
-            return $this->transaction->command(...$this->compile());
+            $result =  $this->transaction->command(...$this->compile());
+        } else {
+            $result = $this->transaction->command(...$this->prepareSQL($preSql, $params));
         }
 
-        return $this->transaction->command(...$this->prepareSQL($preSql, $params));
+        if ($this->lastErrorNo()) {
+            throw new DBException($this->lastError(), $this->lastErrorNo());
+        }
+
+        return $result;
     }
 
     /**
