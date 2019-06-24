@@ -184,8 +184,12 @@ Trait Builder
      * @return $this
      * @throws \Exception
      */
-    public function where($conditions)
+    public function where($conditions, ...$args)
     {
+        if (is_string($conditions) && count($args) === 1 && is_array($args[0])) {
+            $conditions = [$conditions, $args[0]];
+        }
+        
         list($sql, $params) = $this->condition($conditions);
 
         if (!$this->where) {
