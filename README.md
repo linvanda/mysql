@@ -24,57 +24,53 @@ class MySQLFactory
 查询：
 
 ```php
-		$query
-    ->select(['uid', 'name'])
-    ->from('wei_users u')
-    ->join('wei_auth_users au', "u.uid=au.uid")
-    ->where(['uid' => $uid])
-    ->groupBy("u.phone")
-    ->having("count(u.phone)>1")
-    ->orderBy("u.uid desc")
-    ->limit(10, 0)
-    ->list();
+$query->select(['uid', 'name'])
+  ->from('wei_users u')
+  ->join('wei_auth_users au', "u.uid=au.uid")
+  ->where(['uid' => $uid])
+  ->groupBy("u.phone")
+  ->having("count(u.phone)>1")
+  ->orderBy("u.uid desc")
+  ->limit(10, 0)
+  ->list();
 ```
 
 插入：
 
 ```php
-		$query
-    ->insert('users')
-    ->values(
-        [
-            [
-                'name' => 'linvanda',
-                'phone' => '18687664562',
-                'nickname' => '林子',
-            ],
-            [
-                'name' => 'xiake',
-                'phone' => '18989876543',
-                'nickname' => '侠客',
-            ],
-        ]
-    )->execute();
+$query->insert('users')
+  ->values(
+  [
+    [
+      'name' => 'linvanda',
+      'phone' => '18687664562',
+      'nickname' => '林子',
+    ],
+    [
+      'name' => 'xiake',
+      'phone' => '18989876543',
+      'nickname' => '侠客',
+    ],
+  ]
+)->execute();
 ```
 
 更新：
 
 ```php
-		$query
-    ->update('wei_users u')
-    ->join('wei_auth_users au', "u.uid=au.uid", 'left')
-    ->set(['u.name' => '粽子'])
-    ->where("u.uid=:uid", ['uid' => 123])
-    ->execute();
+$query->update('wei_users u')
+  ->join('wei_auth_users au', "u.uid=au.uid", 'left')
+  ->set(['u.name' => '粽子'])
+  ->where("u.uid=:uid", ['uid' => 123])
+  ->execute();
 ```
 
 删除：
 
 ```php
-		$query
-    ->delete('wei_users')
-    ->where("uid=:uid", ['uid' => 123])
-    ->execute();
+$query->delete('wei_users')
+  ->where("uid=:uid", ['uid' => 123])
+  ->execute();
 ```
 
 
