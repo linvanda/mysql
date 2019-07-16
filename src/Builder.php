@@ -23,6 +23,7 @@ Trait Builder
     private $having;
     private $values;
     private $set;
+    private $delayed;
     private $whereParams = [];
     private $joinParams = [];
     private $havingParams = [];
@@ -117,6 +118,12 @@ Trait Builder
         $this->type = 'replace';
         $this->table = $this->plainText($table);
 
+        return $this;
+    }
+
+    public function delayed()
+    {
+        $this->delayed = 'delayed';
         return $this;
     }
 
@@ -344,7 +351,7 @@ Trait Builder
             }
         } else {
             $this->fields = $this->join = $this->orderBy = $this->groupBy = $this->set = '';
-            $this->table = $this->type = $this->values = $this->where = $this->having = '';
+            $this->table = $this->type = $this->values = $this->where = $this->having = $this->delayed = '';
             $this->whereParams = $this->joinParams = $this->havingParams = $this->valuesParams = $this->setParams = [];
             $this->limit = $this->offset = null;
         }
@@ -467,7 +474,7 @@ Trait Builder
     {
         $type = in_array($type, ['insert', 'replace']) ? $type : 'insert';
         return [
-            $this->trimSpace("$type into $this->table $this->values"),
+            $this->trimSpace("$type " . ($this->delayed ?? '') . " into $this->table $this->values"),
             $this->valuesParams
         ];
     }
