@@ -53,6 +53,17 @@ $query->insert('users')
     ],
   ]
 )->execute();
+
+// 延迟插入
+$query->insert('users')
+  ->delayed()
+  ->values(
+  [
+    'name' => 'linvanda',
+    'phone' => '18687664562',
+    'nickname' => '林子',
+  ]
+)->execute();
 ```
 
 更新：
