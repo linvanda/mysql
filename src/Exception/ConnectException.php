@@ -2,7 +2,7 @@
 
 namespace Dev\MySQL\Exception;
 
-class ConnectException extends \Exception
+class ConnectException extends DBException
 {
     //
 }

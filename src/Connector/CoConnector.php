@@ -61,7 +61,7 @@ class CoConnector implements IConnector
 
         $conn = $this->mysql->connect($this->config);
 
-        if ($this->mysql->connect_error) {
+        if (!$conn) {
             throw new ConnectException($this->mysql->connect_error, $this->mysql->connect_errno);
         }
 
@@ -179,6 +179,7 @@ class CoConnector implements IConnector
 
     /**
      * 失败重连
+     * @throws ConnectException
      */
     private function tryReconnectForQueryFail()
     {
@@ -187,7 +188,17 @@ class CoConnector implements IConnector
         }
 
         // 尝试重新连接
-        return $this->mysql->connect($this->config);
+        $connRst = $this->connect();
+
+        if ($connRst) {
+            // 连接成功，需要重置以下错误（swoole 在重连成功后并没有重置这些属性）
+            $this->mysql->error = '';
+            $this->mysql->errno = 0;
+            $this->mysql->connect_error = '';
+            $this->mysql->connect_errno = 0;
+        }
+
+        return $connRst;
     }
 
     /**
