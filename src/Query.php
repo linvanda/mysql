@@ -82,7 +82,7 @@ class Query
     public function list(): array
     {
         $list = $this->transaction->command(...$this->compile());
-        if ($this->lastErrorNo()) {
+        if ($list === false) {
             throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
@@ -98,7 +98,7 @@ class Query
     {
         $list = $this->transaction->command(...$this->limit(1)->compile());
 
-        if ($this->lastErrorNo()) {
+        if ($list === false) {
             throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
@@ -118,7 +118,7 @@ class Query
     {
         $res = $this->transaction->command(...$this->compile());
 
-        if ($this->lastErrorNo()) {
+        if ($res === false) {
             throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
@@ -137,7 +137,7 @@ class Query
         $offset = $this->offset ?? 0;
 
         $countRes = $this->transaction->command(...$this->fields('count(*) as cnt')->reset('limit')->compile(false));
-        if ($this->lastErrorNo()) {
+        if ($countRes === false) {
             throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
@@ -148,7 +148,7 @@ class Query
 
         $data = $this->transaction->command(...$this->fields($fields)->limit($limit, $offset)->compile());
 
-        if ($this->lastErrorNo()) {
+        if ($data === false) {
             throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
@@ -173,7 +173,7 @@ class Query
             $result = $this->transaction->command(...$this->prepareSQL($preSql, $params));
         }
 
-        if ($this->lastErrorNo()) {
+        if ($result === false) {
             throw new DBException($this->lastError(), $this->lastErrorNo());
         }
 
